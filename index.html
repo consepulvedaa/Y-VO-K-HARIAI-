@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Y VOH ☆ K HARIAI? // Reloj de Arena Urbano</title>
+
+    <!-- Meta Tags PWA para Android e iOS (Instalable como App nativa) -->
+    <meta name="theme-color" content="#070709">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Y VOH Timer">
+    <meta name="application-name" content="Y VOH Timer">
+    <link id="dynamicManifest" rel="manifest" href="">
+    <link id="appleTouchIcon" rel="apple-touch-icon" href="">
+
+    <!-- Tailwind CSS para diseño responsivo mobile-first -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Fuentes urbanas y de lectura técnica -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:ital,wght@0,500;0,700;1,700&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --neon-green: #39ff14;
+            --neon-green-dim: rgba(57, 255, 20, 0.22);
+            --neon-green-glow: rgba(57, 255, 20, 0.65);
+            --bg-black: #070709;
+            --panel-bg: #0d0e11;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        html, body {
+            background-color: var(--bg-black);
+            color: #ffffff;
+            font-family: 'Chakra Petch', 'Inter', sans-serif;
+            min-height: 100dvh;
+            min-height: 100svh;
+            width: 100%;
+            max-width: 100vw;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        body {
+            /* Fondo negro profundo #070709 con rejilla urbana sutil y halo verde neón */
+            background-image:
+                radial-gradient(circle at 50% 34%, rgba(57, 255, 20, 0.085) 0%, transparent 58%),
+                linear-gradient(rgba(57, 255, 20, 0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(57, 255, 20, 0.035) 1px, transparent 1px);
+            background-size: 100% 100%, 26px 26px, 26px 26px;
+            padding-top: calc(env(safe-area-inset-top, 0px) + 8px);
+            padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+            padding-left: calc(env(safe-area-inset-left, 0px) + 10px);
+            padding-right: calc(env(safe-area-inset-right, 0px) + 10px);
+        }
+
+        .font-mono-tech {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .neon-text {
+            color: var(--neon-green);
+            text-shadow: 0 0 8px var(--neon-green-glow), 0 0 22px rgba(57, 255, 20, 0.32);
+        }
+
+        .neon-btn {
+            background: rgba(57, 255, 20, 0.08);
+            border: 1px solid var(--neon-green);
+            color: var(--neon-green);
+            transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .neon-btn:hover:not(:disabled),
+        .neon-btn:active:not(:disabled) {
+            background: var(--neon-green);
+            color: #070709;
+            box-shadow: 0 0 18px var(--neon-green-glow);
+        }
+
+        .neon-btn-solid {
+            background: var(--neon-green);
+            color: #070709;
+            font-weight: 800;
+            box-shadow: 0 0 18px rgba(57, 255, 20, 0.45);
+            transition: all 0.16s ease;
+        }
+
+        .neon-btn-solid:hover,
+        .neon-btn-solid:active {
+            background: #5aff3d;
+            box-shadow: 0 0 26px rgba(57, 255, 20, 0.85);
+            transform: scale(0.99);
+        }
+
+        /* Tarjetas con corte urbano en esquina */
+        .urban-card {
+            background: var(--panel-bg);
+            border: 1px solid #1e2228;
+            border-radius: 12px;
+            clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+            transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .urban-card.active-preset {
+            border-color: var(--neon-green);
+            background: linear-gradient(180deg, rgba(57, 255, 20, 0.14) 0%, rgba(13, 14, 17, 0.96) 100%);
+            box-shadow: 0 0 16px rgba(57, 255, 20, 0.22);
+        }
+
+        .hazard-stripe {
+            background: repeating-linear-gradient(
+                -45deg,
+                #39ff14,
+                #39ff14 5px,
+                #070709 5px,
+                #070709 10px
+            );
+        }
+
+        @keyframes alarmPulse {
+            0%, 100% { filter: drop-shadow(0 0 8px #39ff14); }
+            50% { filter: drop-shadow(0 0 26px #39ff14) brightness(1.35); }
+        }
+
+        .alarm-active {
+            animation: alarmPulse 0.65s infinite ease-in-out;
+        }
+
+        /* Integración limpia del logo blanco sobre el fondo oscuro sin recuadro */
+        #brandLogo {
+            mix-blend-mode: lighten;
+            filter: contrast(1.3) brightness(1.08);
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between">
+
+    <!-- Encabezado superior: Barra de estado/acciones y logo central -->
+    <header class="w-full max-w-2xl flex flex-col items-center gap-1.5">
+        <div class="w-full flex items-center justify-between gap-2 text-[11px] uppercase tracking-wider text-neutral-400 border-b border-neutral-900 pb-1.5">
+            <div class="flex items-center gap-1.5 min-w-0">
+                <span class="inline-block w-2 h-2 rounded-full bg-[#39ff14] animate-pulse shrink-0"></span>
+                <span class="font-mono-tech font-bold text-neutral-300 truncate">Y VOH ☆ K HARIAI?</span>
+            </div>
+
+            <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+                <button
+                    id="toggleSoundBtn"
+                    type="button"
+                    class="min-h-[36px] px-2.5 rounded-lg border border-neutral-800 bg-[#0d0e11] hover:border-[#39ff14] hover:text-[#39ff14] transition-colors flex items-center gap-1 cursor-pointer"
+                    title="Activar o desactivar sonido"
+                >
+                    <span id="soundIcon">🔊</span>
+                    <span id="soundLabel" class="font-mono-tech text-[10px]">ON</span>
+                </button>
+
+                <button
+                    id="openInstallModalBtn"
+                    type="button"
+                    class="min-h-[36px] px-2.5 rounded-lg border border-[#39ff14]/60 bg-[#39ff14]/10 text-[#39ff14] hover:bg-[#39ff14] hover:text-[#070709] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                >
+                    <span>📲</span>
+                    <span class="text-[10px] tracking-wider">INSTALAR APP</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Logo oficial integrado desde https://ibb.co/tTv7ZzsT -->
+        <div class="w-full flex items-center justify-center pt-1 pb-0.5">
+            <img
+                id="brandLogo"
+                src="https://i.ibb.co/tTv7ZzsT/WhatsApp-Image-2026-11-22-at-1-26-23-AM.jpg"
+                data-ibb-page="https://ibb.co/tTv7ZzsT"
+                alt="Y VOH K HARÍAÍ?"
+                style="max-height: clamp(68px, 13vh, 108px); max-width: min(260px, 78vw); width: auto; object-fit: contain;"
+                class="block select-none"
+            />
+        </div>
+    </header>
+
+    <!-- Sección principal: Reloj de arena verde neón, marcador digital y controles -->
+    <main class="w-full max-w-2xl flex flex-col items-center justify-center my-auto py-1">
+        <div id="hourglassWrapper" class="relative flex flex-col items-center justify-center w-full">
+            <!-- El tamaño real del canvas se ajusta dinámicamente en JS según el ancho y alto del dispositivo -->
+            <canvas id="hourglassCanvas" class="block cursor-pointer" title="Toca para Iniciar / Pausar"></canvas>
+
+            <!-- Lectura digital de tiempo y estado -->
+            <div class="mt-1 flex flex-col items-center text-center">
+                <div class="flex items-baseline justify-center gap-1">
+                    <span id="digitalDisplay" class="font-mono-tech text-4xl sm:text-6xl font-extrabold tracking-tight neon-text">
+                        00:30
+                    </span>
+                    <span id="msDisplay" class="font-mono-tech text-base sm:text-xl text-[#39ff14]/80 font-bold">
+                        .0
+                    </span>
+                </div>
+                <div class="mt-1">
+                    <span id="statusBadge" class="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] px-2.5 py-0.5 rounded bg-[#39ff14]/10 text-[#39ff14] border border-[#39ff14]/30 inline-block">
+                        LISTO // 30 SEGS
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles principales táctiles -->
+        <div class="flex items-center justify-center gap-2.5 sm:gap-3 mt-2.5 sm:mt-3.5 w-full max-w-md">
+            <button
+                id="startPauseBtn"
+                type="button"
+                class="neon-btn-solid flex-1 min-h-[48px] py-2.5 px-4 sm:px-5 rounded-xl text-sm sm:text-base uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer"
+            >
+                <svg id="playIcon" class="w-5 h-5 fill-current shrink-0" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="pauseIcon" class="w-5 h-5 fill-current hidden shrink-0" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                <span id="startPauseText">INICIAR</span>
+            </button>
+
+            <button
+                id="resetBtn"
+                type="button"
+                class="neon-btn min-h-[48px] py-2.5 px-3.5 sm:px-4 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 cursor-pointer shrink-0"
+                title="Reiniciar reloj actual"
+            >
+                <svg class="w-5 h-5 stroke-current fill-none shrink-0" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span class="hidden sm:inline">REINICIAR</span>
+            </button>
+        </div>
+    </main>
+
+    <!-- Sección inferior: Los 5 tiempos con duplicado y restauración individual -->
+    <section class="w-full max-w-2xl mt-2">
+        <div class="flex items-center justify-between gap-2 mb-2 px-0.5">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2.5 h-2.5 hazard-stripe inline-block shrink-0"></span>
+                <h2 class="text-[10px] sm:text-xs font-bold uppercase tracking-[0.14em] text-neutral-300 truncate">
+                    5 TIEMPOS // DUPLICAR CADA UNO (x2)
+                </h2>
+            </div>
+            <button
+                id="resetAllPresetsBtn"
+                type="button"
+                class="min-h-[34px] text-[10px] font-mono-tech text-neutral-400 hover:text-[#39ff14] uppercase tracking-wider transition-colors px-2 cursor-pointer shrink-0"
+            >
+                ↺ Restaurar todos
+            </button>
+        </div>
+
+        <!-- 2 columnas en pantallas pequeñas (320px-430px), 3 en tablet y 5 en escritorio -->
+        <div id="presetsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            <!-- Tarjetas generadas dinámicamente -->
+        </div>
+    </section>
+
+    <!-- Modal PWA para instalar en Android / iOS o descargar el archivo HTML -->
+    <div id="installModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-sm p-3 sm:p-4">
+        <div class="w-full max-w-md bg-[#0d0e11] border border-[#39ff14] rounded-2xl p-4 sm:p-5 shadow-[0_0_35px_rgba(57,255,20,0.25)] relative max-h-[90dvh] overflow-y-auto">
+            <button
+                id="closeInstallModalBtn"
+                type="button"
+                class="absolute top-3 right-3 w-9 h-9 rounded-lg border border-neutral-800 text-neutral-400 hover:text-[#39ff14] hover:border-[#39ff14] flex items-center justify-center font-bold cursor-pointer"
+                aria-label="Cerrar ventana"
+            >
+                ✕
+            </button>
+
+            <div class="flex items-center gap-2 pr-9 mb-2.5">
+                <span class="w-3 h-3 hazard-stripe inline-block shrink-0"></span>
+                <h3 class="text-sm sm:text-base font-extrabold uppercase tracking-wider neon-text">
+                    INSTALAR COMO APP EN TU CELULAR
+                </h3>
+            </div>
+
+            <p class="text-xs text-neutral-300 leading-relaxed mb-3.5">
+                Esta web funciona como una <strong class="text-[#39ff14]">App Nativa (PWA)</strong> a pantalla completa, adaptada a móviles y sin barra del navegador.
+            </p>
+
+            <button
+                id="nativeInstallPromptBtn"
+                type="button"
+                class="hidden w-full min-h-[46px] mb-3.5 neon-btn-solid rounded-xl text-xs uppercase tracking-widest flex items-center justify-center gap-2 cursor-pointer"
+            >
+                <span>⚡ INSTALAR AHORA EN ESTE DISPOSITIVO</span>
+            </button>
+
+            <div class="space-y-2.5 text-xs">
+                <div class="p-3 rounded-xl bg-[#070709] border border-neutral-800">
+                    <div class="font-bold text-[#39ff14] uppercase tracking-wider mb-1">
+                        🤖 ANDROID (Chrome / Edge / Brave)
+                    </div>
+                    <ol class="list-decimal list-inside text-neutral-300 space-y-1">
+                        <li>Toca el menú de los <strong>3 puntos (⋮)</strong> arriba a la derecha.</li>
+                        <li>Elige <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong>.</li>
+                    </ol>
+                </div>
+
+                <div class="p-3 rounded-xl bg-[#070709] border border-neutral-800">
+                    <div class="font-bold text-[#39ff14] uppercase tracking-wider mb-1">
+                        🍎 iPHONE / iOS (Safari)
+                    </div>
+                    <ol class="list-decimal list-inside text-neutral-300 space-y-1">
+                        <li>Toca el botón <strong>Compartir (□↑)</strong> en Safari.</li>
+                        <li>Selecciona <strong>"Agregar a inicio"</strong>.</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-neutral-800 flex flex-wrap items-center justify-between gap-2">
+                <button
+                    id="downloadHtmlBtn"
+                    type="button"
+                    class="neon-btn flex-1 min-w-[160px] min-h-[42px] px-3 py-2 rounded-xl text-[11px] font-mono-tech font-bold uppercase tracking-wider cursor-pointer"
+                >
+                    ⬇ DESCARGAR .HTML
+                </button>
+                <button
+                    id="doneInstallModalBtn"
+                    type="button"
+                    class="px-4 min-h-[42px] rounded-xl bg-neutral-900 hover:bg-neutral-800 text-neutral-300 text-xs font-bold uppercase cursor-pointer"
+                >
+                    LISTO
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * =========================================================================
+         * 0. RESOLUCIÓN AUTOMÁTICA DEL LOGO DESDE https://ibb.co/tTv7ZzsT
+         * =========================================================================
+         */
+        (function resolveBrandLogoUrl() {
+            const logoImg = document.getElementById('brandLogo');
+            if (!logoImg) return;
+
+            const candidateUrls = [
+                'https://i.ibb.co/tTv7ZzsT/WhatsApp-Image-2026-11-22-at-1-26-23-AM.jpg',
+                'https://i.ibb.co/tTv7ZzsT/WhatsApp-Image-2026-11-22-at-1-26-23-AM.jpeg',
+                'https://i.ibb.co/tTv7ZzsT/image.jpg',
+                'https://i.ibb.co/tTv7ZzsT/image.png',
+                'https://ibb.co/tTv7ZzsT'
+            ];
+
+            let attemptIndex = 0;
+
+            logoImg.onerror = function () {
+                attemptIndex += 1;
+                if (attemptIndex < candidateUrls.length) {
+                    logoImg.src = candidateUrls[attemptIndex];
+                }
+            };
+        })();
+
+        /**
+         * =========================================================================
+         * 1. LOS 5 TIEMPOS EXACTOS: 30 SEGS, 20 SEGS, 1 MIN, 45 SEGS, 10 SEGS
+         * =========================================================================
+         */
+        const INITIAL_PRESETS = [
+            { id: 't1', baseSeconds: 30, currentSeconds: 30, multiplier: 1, baseLabel: '30 SEGS' },
+            { id: 't2', baseSeconds: 20, currentSeconds: 20, multiplier: 1, baseLabel: '20 SEGS' },
+            { id: 't3', baseSeconds: 60, currentSeconds: 60, multiplier: 1, baseLabel: '1 MIN' },
+            { id: 't4', baseSeconds: 45, currentSeconds: 45, multiplier: 1, baseLabel: '45 SEGS' },
+            { id: 't5', baseSeconds: 10, currentSeconds: 10, multiplier: 1, baseLabel: '10 SEGS' }
+        ];
+
+        let presets = JSON.parse(JSON.stringify(INITIAL_PRESETS));
+        let selectedPresetId = 't1';
+        let totalDuration = 30;
+        let remainingTime = 30;
+        let isRunning = false;
+        let isFinished = false;
+        let lastTimestamp = null;
+        let soundEnabled = true;
+        let lastTickSecond = -1;
+
+        /**
+         * =========================================================================
+         * 2. PWA: MANIFEST EMBEBIDO, ICONO Y DESCARGA DEL ARCHIVO
+         * =========================================================================
+         */
+        let deferredInstallPrompt = null;
+        const installModal = document.getElementById('installModal');
+        const openInstallModalBtn = document.getElementById('openInstallModalBtn');
+        const closeInstallModalBtn = document.getElementById('closeInstallModalBtn');
+        const doneInstallModalBtn = document.getElementById('doneInstallModalBtn');
+        const nativeInstallPromptBtn = document.getElementById('nativeInstallPromptBtn');
+        const downloadHtmlBtn = document.getElementById('downloadHtmlBtn');
+
+        function setupPWAManifestAndIcon() {
+            try {
+                const iconCanvas = document.createElement('canvas');
+                iconCanvas.width = 192;
+                iconCanvas.height = 192;
+                const ictx = iconCanvas.getContext('2d');
+
+                ictx.fillStyle = '#070709';
+                ictx.fillRect(0, 0, 192, 192);
+                ictx.strokeStyle = '#39ff14';
+                ictx.lineWidth = 8;
+                ictx.strokeRect(12, 12, 168, 168);
+
+                ictx.beginPath();
+                ictx.moveTo(52, 42);
+                ictx.lineTo(140, 42);
+                ictx.lineTo(96, 96);
+                ictx.lineTo(140, 150);
+                ictx.lineTo(52, 150);
+                ictx.lineTo(96, 96);
+                ictx.closePath();
+                ictx.stroke();
+
+                const iconDataUrl = iconCanvas.toDataURL('image/png');
+                document.getElementById('appleTouchIcon').href = iconDataUrl;
+
+                const manifestObj = {
+                    name: 'Y VOH ☆ K HARIAI? Timer',
+                    short_name: 'Y VOH Timer',
+                    start_url: './reloj_arena_urbano.html',
+                    scope: './',
+                    display: 'standalone',
+                    background_color: '#070709',
+                    theme_color: '#070709',
+                    orientation: 'portrait',
+                    icons: [
+                        {
+                            src: iconDataUrl,
+                            sizes: '192x192',
+                            type: 'image/png',
+                            purpose: 'any maskable'
+                        }
+                    ]
+                };
+
+                const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+                const manifestUrl = URL.createObjectURL(manifestBlob);
+                document.getElementById('dynamicManifest').href = manifestUrl;
+            } catch (err) {
+                console.warn('No se pudo inicializar el manifest PWA:', err);
+            }
+        }
+        setupPWAManifestAndIcon();
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredInstallPrompt = e;
+            nativeInstallPromptBtn.classList.remove('hidden');
+        });
+
+        nativeInstallPromptBtn.addEventListener('click', async () => {
+            if (!deferredInstallPrompt) return;
+            deferredInstallPrompt.prompt();
+            const { outcome } = await deferredInstallPrompt.userChoice;
+            if (outcome === 'accepted') {
+                deferredInstallPrompt = null;
+                nativeInstallPromptBtn.classList.add('hidden');
+                closeInstallModal();
+            }
+        });
+
+        function openInstallModal() {
+            installModal.classList.remove('hidden');
+            installModal.classList.add('flex');
+        }
+
+        function closeInstallModal() {
+            installModal.classList.add('hidden');
+            installModal.classList.remove('flex');
+        }
+
+        openInstallModalBtn.addEventListener('click', openInstallModal);
+        closeInstallModalBtn.addEventListener('click', closeInstallModal);
+        doneInstallModalBtn.addEventListener('click', closeInstallModal);
+        installModal.addEventListener('click', (e) => {
+            if (e.target === installModal) closeInstallModal();
+        });
+
+        downloadHtmlBtn.addEventListener('click', () => {
+            try {
+                const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+                const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'reloj_arena_urbano.html';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                console.warn('Error al descargar el archivo:', err);
+            }
+        });
+
+        /**
+         * =========================================================================
+         * 3. AUDIO SINTETIZADO (WEB AUDIO API)
+         * =========================================================================
+         */
+        let audioCtx = null;
+
+        function initAudio() {
+            try {
+                if (!audioCtx) {
+                    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                    audioCtx = new AudioContextClass();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            } catch (err) {
+                // Sin soporte de audio en el entorno
+            }
+        }
+
+        function playBeep(freq = 880, duration = 0.08, type = 'square', gainVal = 0.08) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+                gain.gain.setValueAtTime(gainVal, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (err) {
+                // Ignorar errores de audio
+            }
+        }
+
+        function playAlarmSequence() {
+            if (!soundEnabled) return;
+            const notes = [880, 1174.66, 880, 1318.51];
+            notes.forEach((freq, idx) => {
+                setTimeout(() => playBeep(freq, 0.16, 'sawtooth', 0.12), idx * 140);
+            });
+        }
+
+        document.getElementById('toggleSoundBtn').addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundIcon').textContent = soundEnabled ? '🔊' : '🔇';
+            document.getElementById('soundLabel').textContent = soundEnabled ? 'ON' : 'OFF';
+            if (soundEnabled) playBeep(660, 0.07, 'sine', 0.1);
+        });
+
+        /**
+         * =========================================================================
+         * 4. TARJETAS DE LOS 5 TIEMPOS CON DUPLICAR (x2) Y RESTAURAR (↺) INDIVIDUAL
+         * =========================================================================
+         */
+        const presetsGrid = document.getElementById('presetsGrid');
+
+        function formatPresetTime(seconds) {
+            if (seconds < 60) {
+                return `${seconds}s`;
+            } else if (seconds % 60 === 0) {
+                return `${seconds / 60}:00`;
+            } else {
+                const mins = Math.floor(seconds / 60);
+                const secs = String(seconds % 60).padStart(2, '0');
+                return `${mins}:${secs}`;
+            }
+        }
+
+        function renderPresets() {
+            presetsGrid.innerHTML = '';
+
+            presets.forEach((preset) => {
+                const isSelected = preset.id === selectedPresetId;
+                const isDuplicated = preset.multiplier > 1;
+
+                const card = document.createElement('div');
+                card.className = `urban-card p-2 flex flex-col justify-between gap-1.5 ${isSelected ? 'active-preset' : ''}`;
+
+                card.innerHTML = `
+                    <button
+                        type="button"
+                        data-action="select"
+                        data-id="${preset.id}"
+                        class="w-full flex flex-col items-center justify-center py-0.5 cursor-pointer group"
+                    >
+                        <div class="flex items-center justify-center gap-1 flex-wrap">
+                            <span class="text-[9px] font-mono-tech uppercase tracking-wider ${isSelected ? 'text-[#39ff14]' : 'text-neutral-500'}">
+                                ${isDuplicated ? `BASE ${preset.baseLabel}` : preset.baseLabel}
+                            </span>
+                            ${isDuplicated ? `<span class="text-[9px] font-mono-tech bg-[#39ff14] text-[#070709] font-extrabold px-1 rounded">x${preset.multiplier}</span>` : ''}
+                        </div>
+                        <span class="font-mono-tech text-lg sm:text-xl font-extrabold mt-0.5 tracking-tight ${isSelected ? 'neon-text' : 'text-white group-hover:text-[#39ff14]'} transition-colors">
+                            ${formatPresetTime(preset.currentSeconds)}
+                        </span>
+                    </button>
+
+                    <div class="flex items-center gap-1 border-t border-neutral-800/90 pt-1.5">
+                        <button
+                            type="button"
+                            data-action="duplicate"
+                            data-id="${preset.id}"
+                            class="neon-btn flex-1 min-h-[38px] py-1 px-1.5 rounded-lg text-[11px] font-mono-tech font-bold uppercase tracking-wider flex items-center justify-center gap-1 cursor-pointer"
+                            title="Duplicar únicamente este tiempo (x2)"
+                        >
+                            <span>⚡ x2</span>
+                        </button>
+                        ${isDuplicated ? `
+                            <button
+                                type="button"
+                                data-action="reset-single"
+                                data-id="${preset.id}"
+                                class="min-h-[38px] min-w-[36px] border border-neutral-700 hover:border-[#39ff14] text-neutral-300 hover:text-[#39ff14] px-2 py-1 rounded-lg text-xs font-mono-tech font-bold cursor-pointer"
+                                title="Restaurar este tiempo a ${preset.baseLabel}"
+                            >
+                                ↺
+                            </button>
+                        ` : ''}
+                    </div>
+                `;
+
+                presetsGrid.appendChild(card);
+            });
+        }
+
+        presetsGrid.addEventListener('click', (e) => {
+            const btn = e.target.closest('button[data-action]');
+            if (!btn) return;
+
+            const action = btn.getAttribute('data-action');
+            const id = btn.getAttribute('data-id');
+            const preset = presets.find(p => p.id === id);
+            if (!preset) return;
+
+            if (action === 'select') {
+                selectPreset(preset.id);
+                playBeep(520, 0.06, 'sine', 0.08);
+            } else if (action === 'duplicate') {
+                if (preset.currentSeconds < 7200) {
+                    preset.currentSeconds *= 2;
+                    preset.multiplier *= 2;
+                    playBeep(780, 0.08, 'triangle', 0.1);
+                }
+                if (selectedPresetId === preset.id) {
+                    applyPresetToClock(preset);
+                }
+                renderPresets();
+            } else if (action === 'reset-single') {
+                preset.currentSeconds = preset.baseSeconds;
+                preset.multiplier = 1;
+                playBeep(400, 0.06, 'sine', 0.08);
+                if (selectedPresetId === preset.id) {
+                    applyPresetToClock(preset);
+                }
+                renderPresets();
+            }
+        });
+
+        document.getElementById('resetAllPresetsBtn').addEventListener('click', () => {
+            presets = JSON.parse(JSON.stringify(INITIAL_PRESETS));
+            const current = presets.find(p => p.id === selectedPresetId);
+            if (current) applyPresetToClock(current);
+            renderPresets();
+            playBeep(440, 0.08, 'sine', 0.08);
+        });
+
+        function selectPreset(id) {
+            selectedPresetId = id;
+            const preset = presets.find(p => p.id === id);
+            if (preset) {
+                applyPresetToClock(preset);
+            }
+            renderPresets();
+        }
+
+        function applyPresetToClock(preset) {
+            isRunning = false;
+            isFinished = false;
+            totalDuration = preset.currentSeconds;
+            remainingTime = preset.currentSeconds;
+            lastTickSecond = -1;
+            sandParticles = [];
+            sparkParticles = [];
+            hourglassWrapper.classList.remove('alarm-active');
+            updateControlsUI();
+            updateDigitalDisplay();
+        }
+
+        /**
+         * =========================================================================
+         * 5. RELOJ DE ARENA VERDE NEÓN EN CANVAS RESPONSIVO
+         * =========================================================================
+         */
+        const canvas = document.getElementById('hourglassCanvas');
+        const ctx = canvas.getContext('2d');
+        const hourglassWrapper = document.getElementById('hourglassWrapper');
+
+        let sandParticles = [];
+        let sparkParticles = [];
+        let canvasWidth = 210;
+        let canvasHeight = 250;
+
+        function resizeCanvas() {
+            const dpr = Math.min(window.devicePixelRatio || 1, 3);
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+
+            // Adaptación limpia para móviles estrechos (320px-430px), pantallas bajas y tablets
+            const maxByWidth = Math.max(135, Math.min(235, vw * 0.56));
+            const maxByHeight = Math.max(145, Math.min(275, vh * 0.30));
+            const targetHeight = Math.min(maxByHeight, maxByWidth * 1.18);
+            const targetWidth = targetHeight * 0.82;
+
+            canvasWidth = Math.round(targetWidth);
+            canvasHeight = Math.round(targetHeight);
+
+            canvas.style.width = `${canvasWidth}px`;
+            canvas.style.height = `${canvasHeight}px`;
+            canvas.width = Math.round(canvasWidth * dpr);
+            canvas.height = Math.round(canvasHeight * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', () => setTimeout(resizeCanvas, 120));
+        resizeCanvas();
+
+        function traceUpperBulbPath(ctx, cx, topY, neckY, maxHalfW, neckHalfW) {
+            const h = neckY - topY;
+            ctx.beginPath();
+            ctx.moveTo(cx - maxHalfW, topY);
+            ctx.lineTo(cx + maxHalfW, topY);
+            ctx.bezierCurveTo(
+                cx + maxHalfW, topY + h * 0.58,
+                cx + neckHalfW, topY + h * 0.72,
+                cx + neckHalfW, neckY
+            );
+            ctx.lineTo(cx - neckHalfW, neckY);
+            ctx.bezierCurveTo(
+                cx - neckHalfW, topY + h * 0.72,
+                cx - maxHalfW, topY + h * 0.58,
+                cx - maxHalfW, topY
+            );
+            ctx.closePath();
+        }
+
+        function traceLowerBulbPath(ctx, cx, neckY, botY, maxHalfW, neckHalfW) {
+            const h = botY - neckY;
+            ctx.beginPath();
+            ctx.moveTo(cx - neckHalfW, neckY);
+            ctx.lineTo(cx + neckHalfW, neckY);
+            ctx.bezierCurveTo(
+                cx + neckHalfW, neckY + h * 0.28,
+                cx + maxHalfW, neckY + h * 0.42,
+                cx + maxHalfW, botY
+            );
+            ctx.lineTo(cx - maxHalfW, botY);
+            ctx.bezierCurveTo(
+                cx - maxHalfW, neckY + h * 0.42,
+                cx - neckHalfW, neckY + h * 0.28,
+                cx - neckHalfW, neckY
+            );
+            ctx.closePath();
+        }
+
+        function drawHourglass(dt) {
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+            const cx = canvasWidth / 2;
+            const cy = canvasHeight / 2;
+            const padY = Math.max(14, canvasHeight * 0.065);
+            const topY = padY;
+            const botY = canvasHeight - padY;
+            const neckY = cy;
+
+            const maxHalfW = canvasWidth * 0.35;
+            const neckHalfW = Math.max(4.5, canvasWidth * 0.022);
+
+            const progress = totalDuration > 0 ? Math.max(0, Math.min(1, remainingTime / totalDuration)) : 0;
+            const fallenRatio = 1 - progress;
+
+            // 1. Interior translúcido del reloj
+            ctx.save();
+            ctx.fillStyle = 'rgba(14, 24, 15, 0.48)';
+            traceUpperBulbPath(ctx, cx, topY, neckY, maxHalfW, neckHalfW);
+            ctx.fill();
+            traceLowerBulbPath(ctx, cx, neckY, botY, maxHalfW, neckHalfW);
+            ctx.fill();
+            ctx.restore();
+
+            // 2. Arena superior
+            if (progress > 0.001) {
+                ctx.save();
+                traceUpperBulbPath(ctx, cx, topY, neckY, maxHalfW - 2, neckHalfW - 1);
+                ctx.clip();
+
+                const upperH = neckY - topY;
+                const sandHeight = upperH * Math.pow(progress, 0.78);
+                const surfaceY = neckY - sandHeight;
+                const funnelDip = isRunning ? Math.min(12, sandHeight * 0.28) : Math.min(5, sandHeight * 0.15);
+
+                const upperGrad = ctx.createLinearGradient(cx, surfaceY, cx, neckY);
+                upperGrad.addColorStop(0, '#9dff8a');
+                upperGrad.addColorStop(0.35, '#39ff14');
+                upperGrad.addColorStop(1, '#149400');
+
+                ctx.fillStyle = upperGrad;
+                ctx.beginPath();
+                ctx.moveTo(cx - maxHalfW, surfaceY);
+                ctx.quadraticCurveTo(cx, surfaceY + funnelDip * 1.8, cx + maxHalfW, surfaceY);
+                ctx.lineTo(cx + maxHalfW, neckY + 2);
+                ctx.lineTo(cx - maxHalfW, neckY + 2);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.strokeStyle = '#d4ffcc';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(cx - maxHalfW, surfaceY);
+                ctx.quadraticCurveTo(cx, surfaceY + funnelDip * 1.8, cx + maxHalfW, surfaceY);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // 3. Montículo inferior acumulándose
+            const lowerH = botY - neckY;
+            const pileHeight = lowerH * Math.pow(fallenRatio, 0.78);
+            const pilePeakY = botY - pileHeight;
+
+            if (fallenRatio > 0.001) {
+                ctx.save();
+                traceLowerBulbPath(ctx, cx, neckY, botY, maxHalfW - 2, neckHalfW - 1);
+                ctx.clip();
+
+                const lowerGrad = ctx.createLinearGradient(cx, pilePeakY, cx, botY);
+                lowerGrad.addColorStop(0, '#9dff8a');
+                lowerGrad.addColorStop(0.3, '#39ff14');
+                lowerGrad.addColorStop(1, '#0e7300');
+
+                ctx.fillStyle = lowerGrad;
+                const conePeakOffset = isRunning ? Math.min(15, pileHeight * 0.32) : Math.min(8, pileHeight * 0.2);
+
+                ctx.beginPath();
+                ctx.moveTo(cx - maxHalfW, botY + 2);
+                ctx.lineTo(cx - maxHalfW, pilePeakY + conePeakOffset);
+                ctx.quadraticCurveTo(cx, pilePeakY - conePeakOffset, cx + maxHalfW, pilePeakY + conePeakOffset);
+                ctx.lineTo(cx + maxHalfW, botY + 2);
+                ctx.closePath();
+                ctx.fill();
+
+                // Granos texturizados dentro del montículo
+                ctx.fillStyle = 'rgba(225, 255, 220, 0.32)';
+                for (let i = 0; i < 16; i++) {
+                    const gx = cx + Math.sin(i * 19.7) * (maxHalfW * 0.65);
+                    const gy = pilePeakY + 7 + ((i * 13) % Math.max(10, pileHeight));
+                    if (gy < botY - 3) {
+                        ctx.fillRect(gx, gy, 2, 2);
+                    }
+                }
+
+                ctx.strokeStyle = '#ccffc2';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(cx - maxHalfW, pilePeakY + conePeakOffset);
+                ctx.quadraticCurveTo(cx, pilePeakY - conePeakOffset, cx + maxHalfW, pilePeakY + conePeakOffset);
+                ctx.stroke();
+
+                ctx.restore();
+            }
+
+            // 4. Chorro de arena cayendo, partículas visibles y chispas de impacto
+            const targetImpactY = Math.max(neckY + 5, pilePeakY - 2);
+
+            if (isRunning && progress > 0) {
+                for (let i = 0; i < 4; i++) {
+                    sandParticles.push({
+                        x: cx + (Math.random() - 0.5) * 3.2,
+                        y: neckY + Math.random() * 5,
+                        vy: 155 + Math.random() * 85,
+                        size: 1.6 + Math.random() * 1.5,
+                        bright: Math.random() > 0.3
+                    });
+                }
+
+                ctx.save();
+                ctx.shadowColor = '#39ff14';
+                ctx.shadowBlur = 10;
+                const streamGrad = ctx.createLinearGradient(cx, neckY, cx, targetImpactY);
+                streamGrad.addColorStop(0, '#ffffff');
+                streamGrad.addColorStop(0.5, '#39ff14');
+                streamGrad.addColorStop(1, '#b8ffab');
+
+                ctx.strokeStyle = streamGrad;
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                ctx.moveTo(cx, neckY - 2);
+                ctx.lineTo(cx, targetImpactY);
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            for (let i = sandParticles.length - 1; i >= 0; i--) {
+                const p = sandParticles[i];
+                if (isRunning) {
+                    p.y += p.vy * dt;
+                    p.x += Math.sin(p.y * 0.16) * 0.25;
+                }
+
+                if (p.y >= targetImpactY) {
+                    if (isRunning && Math.random() > 0.42) {
+                        sparkParticles.push({
+                            x: p.x,
+                            y: targetImpactY,
+                            vx: (Math.random() - 0.5) * 44,
+                            vy: -14 - Math.random() * 22,
+                            life: 1.0
+                        });
+                    }
+                    sandParticles.splice(i, 1);
+                } else {
+                    ctx.fillStyle = p.bright ? '#e8ffe2' : '#39ff14';
+                    ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size * 1.45);
+                }
+            }
+
+            for (let i = sparkParticles.length - 1; i >= 0; i--) {
+                const s = sparkParticles[i];
+                if (isRunning) {
+                    s.x += s.vx * dt;
+                    s.y += s.vy * dt;
+                    s.vy += 120 * dt;
+                    s.life -= dt * 3.5;
+                }
+                if (s.life <= 0) {
+                    sparkParticles.splice(i, 1);
+                } else {
+                    ctx.fillStyle = `rgba(185, 255, 170, ${s.life})`;
+                    ctx.fillRect(s.x, s.y, 1.8, 1.8);
+                }
+            }
+
+            // 5. Contorno verde neón y reflejos
+            ctx.save();
+            ctx.strokeStyle = '#39ff14';
+            ctx.lineWidth = 2.8;
+            ctx.shadowColor = '#39ff14';
+            ctx.shadowBlur = 14;
+
+            traceUpperBulbPath(ctx, cx, topY, neckY, maxHalfW, neckHalfW);
+            ctx.stroke();
+            traceLowerBulbPath(ctx, cx, neckY, botY, maxHalfW, neckHalfW);
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.strokeStyle = 'rgba(205, 255, 195, 0.35)';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.moveTo(cx - maxHalfW + 8, topY + 10);
+            ctx.bezierCurveTo(
+                cx - maxHalfW + 8, topY + (neckY - topY) * 0.5,
+                cx - neckHalfW - 6, topY + (neckY - topY) * 0.7,
+                cx - neckHalfW - 3.5, neckY - 6
+            );
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(cx - neckHalfW - 4.5, neckY + 8);
+            ctx.bezierCurveTo(
+                cx - neckHalfW - 8, neckY + (botY - neckY) * 0.35,
+                cx - maxHalfW + 8, neckY + (botY - neckY) * 0.55,
+                cx - maxHalfW + 8, botY - 10
+            );
+            ctx.stroke();
+            ctx.restore();
+
+            // 6. Tapas industriales superior e inferior
+            const capW = maxHalfW * 2 + 20;
+            const capH = 10;
+            drawIndustrialCap(cx - capW / 2, topY - capH + 2, capW, capH);
+            drawIndustrialCap(cx - capW / 2, botY - 2, capW, capH);
+        }
+
+        function drawIndustrialCap(x, y, w, h) {
+            ctx.save();
+            ctx.fillStyle = '#0d120d';
+            ctx.strokeStyle = '#39ff14';
+            ctx.lineWidth = 2;
+            ctx.shadowColor = '#39ff14';
+            ctx.shadowBlur = 9;
+
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 3);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#39ff14';
+            ctx.fillRect(x + 5, y + 3, 3.5, 3.5);
+            ctx.fillRect(x + w - 8.5, y + 3, 3.5, 3.5);
+            ctx.restore();
+        }
+
+        /**
+         * =========================================================================
+         * 6. BUCLE PRINCIPAL DEL TEMPORIZADOR
+         * =========================================================================
+         */
+        const digitalDisplay = document.getElementById('digitalDisplay');
+        const msDisplay = document.getElementById('msDisplay');
+        const statusBadge = document.getElementById('statusBadge');
+        const startPauseBtn = document.getElementById('startPauseBtn');
+        const startPauseText = document.getElementById('startPauseText');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function updateDigitalDisplay() {
+            const mins = Math.floor(remainingTime / 60);
+            const secs = Math.floor(remainingTime % 60);
+            const tenths = Math.floor((remainingTime % 1) * 10);
+
+            digitalDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            msDisplay.textContent = `.${tenths}`;
+
+            if (isRunning && remainingTime <= 3.0 && remainingTime > 0.1) {
+                const currentSec = Math.ceil(remainingTime);
+                if (currentSec !== lastTickSecond) {
+                    lastTickSecond = currentSec;
+                    playBeep(620, 0.05, 'sine', 0.07);
+                }
+            }
+
+            const activePreset = presets.find(p => p.id === selectedPresetId);
+            const label = activePreset ? `${activePreset.currentSeconds}s` : `${totalDuration}s`;
+
+            if (isFinished) {
+                statusBadge.textContent = `¡TIEMPO COMPLETADO! // ${label}`;
+                statusBadge.className = 'text-[10px] sm:text-[11px] font-extrabold uppercase tracking-[0.16em] px-3 py-0.5 rounded bg-[#39ff14] text-[#070709] inline-block';
+            } else if (isRunning) {
+                statusBadge.textContent = `CORRIENDO // ${label}`;
+                statusBadge.className = 'text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] px-2.5 py-0.5 rounded bg-[#39ff14]/20 text-[#39ff14] border border-[#39ff14] inline-block';
+            } else {
+                statusBadge.textContent = `LISTO // ${label}`;
+                statusBadge.className = 'text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.16em] px-2.5 py-0.5 rounded bg-[#39ff14]/10 text-[#39ff14] border border-[#39ff14]/30 inline-block';
+            }
+        }
+
+        function updateControlsUI() {
+            if (isRunning) {
+                startPauseText.textContent = 'PAUSAR';
+                playIcon.classList.add('hidden');
+                pauseIcon.classList.remove('hidden');
+            } else {
+                startPauseText.textContent = isFinished ? 'REINICIAR' : 'INICIAR';
+                playIcon.classList.remove('hidden');
+                pauseIcon.classList.add('hidden');
+            }
+        }
+
+        function toggleStartPause() {
+            initAudio();
+            if (isFinished) {
+                remainingTime = totalDuration;
+                isFinished = false;
+                isRunning = true;
+                lastTickSecond = -1;
+                hourglassWrapper.classList.remove('alarm-active');
+                playBeep(660, 0.08, 'sine', 0.1);
+            } else {
+                isRunning = !isRunning;
+                playBeep(isRunning ? 740 : 480, 0.07, 'sine', 0.09);
+            }
+            updateControlsUI();
+            updateDigitalDisplay();
+        }
+
+        function resetTimer() {
+            isRunning = false;
+            isFinished = false;
+            remainingTime = totalDuration;
+            lastTickSecond = -1;
+            sandParticles = [];
+            sparkParticles = [];
+            hourglassWrapper.classList.remove('alarm-active');
+            playBeep(420, 0.08, 'sine', 0.08);
+            updateControlsUI();
+            updateDigitalDisplay();
+        }
+
+        startPauseBtn.addEventListener('click', toggleStartPause);
+        canvas.addEventListener('click', toggleStartPause);
+        resetBtn.addEventListener('click', resetTimer);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') {
+                e.preventDefault();
+                toggleStartPause();
+            }
+        });
+
+        function animationLoop(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            const dt = Math.min(0.1, (timestamp - lastTimestamp) / 1000);
+            lastTimestamp = timestamp;
+
+            if (isRunning && !isFinished) {
+                remainingTime -= dt;
+                if (remainingTime <= 0) {
+                    remainingTime = 0;
+                    isRunning = false;
+                    isFinished = true;
+                    hourglassWrapper.classList.add('alarm-active');
+                    playAlarmSequence();
+                    updateControlsUI();
+                }
+                updateDigitalDisplay();
+            }
+
+            drawHourglass(dt);
+            requestAnimationFrame(animationLoop);
+        }
+
+        window.onload = function () {
+            resizeCanvas();
+            renderPresets();
+            updateDigitalDisplay();
+            updateControlsUI();
+            requestAnimationFrame(animationLoop);
+        };
+    </script>
+</body>
+</html>
